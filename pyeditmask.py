@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ######################################################
-## Edits ROMS masks using mouse click
+## Edits ROMS masks using a GUI
 ## Nov 2014
 ## rsoutelino@gmail.com
 ######################################################
@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import scipy.io as sp
 import netCDF4 as nc
-from roms import romslab
 
 # TO-DO LIST: ====================================================
 #   - improve point selection based in find_lower_left_node
@@ -47,6 +46,40 @@ DEFAULT_VMIN = 0
 DEFAULT_VMAX=1.5 
 DEFAULT_CMAP = plt.cm.BrBG
 DEFAULT_DEPTH_FOR_LAND = -50
+
+
+# ROMS related objects ---------------------------------------------
+class RomsGrid(object):
+    """ 
+    Stores and manipulates netcdf ROMS grid file information
+    """
+    def __init__(self,filename):
+        self.filename = filename    
+        self.ncfile = nc.Dataset(filename, mode='r+')
+        self.lonr  = self.ncfile.variables['lon_rho'][:]
+        self.latr  = self.ncfile.variables['lat_rho'][:]
+        self.lonu  = self.ncfile.variables['lon_u'][:]
+        self.latu  = self.ncfile.variables['lat_u'][:]
+        self.lonv  = self.ncfile.variables['lon_v'][:]
+        self.latv  = self.ncfile.variables['lat_v'][:]
+        self.h     = self.ncfile.variables['h'][:]
+        self.maskr = self.ncfile.variables['mask_rho'][:]
+        self.masku = self.ncfile.variables['mask_u'][:]
+        self.maskv = self.ncfile.variables['mask_v'][:]     
+
+
+def uvp_mask(rfield):
+    Mp, Lp = rfield.shape
+    M      = Mp - 1
+    L      = Lp - 1
+
+    vfield = rfield[0:M,:] * rfield[1:Mp,:]
+    ufield = rfield[:,0:L] * rfield[:,1:Lp]
+    pfield = ufield[0:M,:] * ufield[1:Mp,:]
+
+    return ufield, vfield, pfield
+# -------------------------------------------------------------------
+
 
 class App(wx.App):
     def OnInit(self):
@@ -244,7 +277,7 @@ class MainToolBar(object):
             return     # the user changed idea...
 
         filename = openFileDialog.GetPath()
-        grd = romslab.RomsGrid(filename)
+        grd = RomsGrid(filename)
 
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
@@ -292,7 +325,7 @@ class MainToolBar(object):
 
     def OnSaveGrid(self, evt):
         maskr = self.grd.maskr
-        [masku, maskv, maskp] = romslab.uvp_mask(maskr)
+        [masku, maskv, maskp] = uvp_mask(maskr)
         self.grd.ncfile.variables['mask_rho'][:] = maskr
         self.grd.ncfile.variables['mask_u'][:]   = masku
         self.grd.ncfile.variables['mask_v'][:]   = maskv
