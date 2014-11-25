@@ -167,7 +167,7 @@ class Interface(wx.Frame):
         self.Bind(wx.EVT_MENU, self.toolbar.OnLoadCoastline, opc)
         self.Bind(wx.EVT_MENU, self.toolbar.OnSaveGrid, svf)
 
-        menubar.Append(fileMenu, u'&PyEditMask 0.1.0')
+        menubar.Append(fileMenu, u'&PyEditMask')
         self.SetMenuBar(menubar)
 
 
