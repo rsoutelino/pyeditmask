@@ -33,7 +33,7 @@ import netCDF4 as nc
 # NICE TIP TO DEBUG THIS PROGRAM: ================================
 #   - comment out app.MainLoop at the last line of this script
 #   - ipython --gui=wx
-#   - run editmask.py
+#   - run pyeditmask.py
 #   - trigger the events and check out the objects in the shell
 # ================================================================
 
@@ -83,7 +83,7 @@ def uvp_mask(rfield):
 
 class App(wx.App):
     def OnInit(self):
-        self.frame = Interface("EditMask beta", size=(1024,800))
+        self.frame = Interface("PyEditMask 0.1.0", size=(1024,800))
         self.frame.Show()
         return True
 
@@ -92,7 +92,7 @@ class Interface(wx.Frame):
     def __init__(self, title=wx.EmptyString, pos=wx.DefaultPosition, 
                        size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE,
                        *args, **kwargs):
-        wx.Frame.__init__(self, None, -1, "EditMask beta", pos=pos, 
+        wx.Frame.__init__(self, None, -1, "PyEditMask 0.1.0", pos=pos, 
                           size=size, style=style, *args, **kwargs)
         
         # Initializing toolbar
@@ -167,7 +167,7 @@ class Interface(wx.Frame):
         self.Bind(wx.EVT_MENU, self.toolbar.OnLoadCoastline, opc)
         self.Bind(wx.EVT_MENU, self.toolbar.OnSaveGrid, svf)
 
-        menubar.Append(fileMenu, u'&EditMask beta')
+        menubar.Append(fileMenu, u'&PyEditMask 0.1.0')
         self.SetMenuBar(menubar)
 
 
@@ -224,10 +224,10 @@ class MainToolBar(object):
                         "Set grid point to water"),
             'set_water_area': (load_bitmap('water_area.png'), u"Set water area",
                         "Set poligon area to water"),
-            'settings': (load_bitmap('settings.png'), u"EditMask settings",
-                        "EditMask configurations"),
+            'settings': (load_bitmap('settings.png'), u"PyEditMask settings",
+                        "PyEditMask configurations"),
             'quit': (load_bitmap('exit.png'), u"Quit",
-                        "Quit editmask"),
+                        "Quit PyEditMask"),
         }
         
         self.createTool(self.toolbar, self.tools_params['load_grid'], 
