@@ -8,5 +8,5 @@ Quick start
 - install dependencies
   - wxpython, numpy, scipy, matplotlib, netCDF4
 
-- run `python editmask.nc`
+- run `python pyeditmask.py`
 - more documentation to come ...
