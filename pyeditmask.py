@@ -269,7 +269,7 @@ class MainToolBar(object):
 
     def OnLoadGrid(self, evt):
         openFileDialog = wx.FileDialog(self.parent, "Open grid netcdf file [*.nc]",
-                                       "/ops/forecast/roms/patag2/static", " ",
+                                       "/ops/hindcast/roms", " ",
                                        "netcdf files (*.nc)|*.nc",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
@@ -296,17 +296,17 @@ class MainToolBar(object):
 
 
     def OnLoadCoastline(self, evt):
-        openFileDialog = wx.FileDialog(self.parent, "Open coastline file - MATLAB Seagrid-like format",
-                                       "/home/rsoutelino/metocean/projects/mermaid", " ",
-                                       "MAT files (*.mat)|*.mat",
+        openFileDialog = wx.FileDialog(self.parent, "Open coastline file - NETCDF",
+                                       "/metocean/roms/data", " ",
+                                       "NETCDF files (*.nc)|*.nc",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
 
         filename = openFileDialog.GetPath()
-        coast = sp.loadmat(filename)
-        lon, lat = coast['lon'], coast['lat']
+        coast = nc.Dataset(filename)
+        lon, lat = coast.variables['lon'][:], coast.variables['lat'][:]
 
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
