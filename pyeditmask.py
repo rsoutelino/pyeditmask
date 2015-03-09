@@ -292,7 +292,7 @@ class MainToolBar(object):
 
         mplpanel.canvas.draw()
         self.grd = grd
-        self.grd.hmin = grd.ncfile.variables['depthmin'][:]
+        self.grd.hmin = grd.ncfile.variables['h'][:].min()
 
 
     def OnLoadCoastline(self, evt):
