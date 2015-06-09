@@ -9,4 +9,5 @@ Quick start
   - wxpython, numpy, scipy, matplotlib, netCDF4
 
 - run `python pyeditmask.py`
-- more documentation to come ...
+- load the grid
+- Using the "A" buttons: toggle the buttom and start clicking with the left mouse buttom to make roughly a closed poligon. Click the right buttom when you're finished.   
