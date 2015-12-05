@@ -48,6 +48,58 @@ DEFAULT_CMAP = plt.cm.BrBG
 DEFAULT_DEPTH_FOR_LAND = -50
 
 
+class WW3Grid(object):
+    """ 
+    Stores and manipulates WW3 gridgen output 
+    """
+    def __init__(self,filename):
+        self.filename = filename
+        self.read_meta()
+        self.read_grid()
+        # self.ncfile = nc.Dataset(filename, mode='r+')
+        # self.lonr  = self.ncfile.variables['lon_rho'][:]
+        # self.latr  = self.ncfile.variables['lat_rho'][:]
+        # self.lonu  = self.ncfile.variables['lon_u'][:]
+        # self.latu  = self.ncfile.variables['lat_u'][:]
+        # self.lonv  = self.ncfile.variables['lon_v'][:]
+        # self.latv  = self.ncfile.variables['lat_v'][:]
+        # self.h     = self.ncfile.variables['h'][:]
+        # self.maskr = self.ncfile.variables['mask_rho'][:]
+        # self.masku = self.ncfile.variables['mask_u'][:]
+        # self.maskv = self.ncfile.variables['mask_v'][:]     
+
+    def read_meta(self):
+        """
+        Reads meta data
+        """
+        tmp=['dummy']
+        f=open(self.filename)
+        while tmp[0] != "'RECT'":
+            tmp=f.readline().split()
+        nx,ny=np.array(f.readline().split()).astype(float)
+        res=np.array(f.readline().split()).astype(float)
+        x0 = np.array(f.readline().split()).astype(float)
+        dlon,dlat=res[0]/res[2],res[1]/res[2]
+        lon0,lat0=x0[0]/x0[2],x0[1]/x0[2]
+        self.lonr = np.linspace(lon0, lon0+(dlon)*ny, ny, endpoint=True)
+        self.latr = np.linspace(lat0, lat0+(dlat)*nx, nx, endpoint=True)
+
+    def read_grid(self,extention='mask'):
+        """
+        Reads filename and returns data in numpy array
+        filename -- filename
+        """
+        dir,meta = os.path.split(self.filename)
+        filename = os.path.join(dir,meta.split('.')[0]+'.'+extention)
+        if extention == 'obst':
+            temp = np.loadtxt(filename)
+            shape = temp.shape
+            dum = shape[0]/2
+            self.maskr = np.array([temp[:dum,],temp[dum:,]])
+        else:
+            self.maskr = np.loadtxt(filename).transpose()
+
+
 # ROMS related objects ---------------------------------------------
 class RomsGrid(object):
     """ 
@@ -268,16 +320,16 @@ class MainToolBar(object):
 
 
     def OnLoadGrid(self, evt):
-        openFileDialog = wx.FileDialog(self.parent, "Open grid netcdf file [*.nc]",
-                                       "/ops/hindcast/roms", " ",
-                                       "netcdf files (*.nc)|*.nc",
+        openFileDialog = wx.FileDialog(self.parent, "Open gridgen meta file [*.meta]",
+                                       "/source/ww3/tools/gridgen/output/", " ",
+                                       "meta files (*.meta)|*.meta",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
 
         filename = openFileDialog.GetPath()
-        grd = RomsGrid(filename)
+        grd = WW3Grid(filename)
 
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
