@@ -18,6 +18,8 @@ from matplotlib.path import Path
 import scipy.io as sp
 import netCDF4 as nc
 
+from mpl_toolkits.basemap import Basemap
+
 # TO-DO LIST: ====================================================
 #   - improve point selection based in find_lower_left_node
 #   - create better icons for mask/unmask area
@@ -296,28 +298,30 @@ class MainToolBar(object):
 
 
     def OnLoadCoastline(self, evt):
-        openFileDialog = wx.FileDialog(self.parent, "Open coastline file - NETCDF",
-                                       "/metocean/roms/data", " ",
-                                       "NETCDF files (*.nc)|*.nc",
-                                       wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-
-        if openFileDialog.ShowModal() == wx.ID_CANCEL:
-            return     # the user changed idea...
-
-        filename = openFileDialog.GetPath()
-        coast = nc.Dataset(filename)
-        lon, lat = coast.variables['lon'][:], coast.variables['lat'][:]
 
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
-        ax.plot(lon, lat, 'k')
 
         try:
-            ax.set_xlim([self.grd.lonr.min(), self.grd.lonr.max()])
-            ax.set_ylim([self.grd.latr.min(), self.grd.latr.max()])
+            m = Basemap( resolution='h', projection='cyl',
+                         llcrnrlon=self.grd.lonr.min(), urcrnrlon=self.grd.lonr.max(),
+                         llcrnrlat=self.grd.latr.min(), urcrnrlat=self.grd.latr.max() )
+
+            coasts = m.drawcoastlines(zorder=100, linewidth=1.0)
+            coasts_paths = coasts.get_paths()
+             
+            for ipoly in xrange(len(coasts_paths)):
+                r = coasts_paths[ipoly]
+                # Convert into lon/lat vertices
+                polygon_vertices = [ (vertex[0],vertex[1]) for (vertex,code) in
+                                    r.iter_segments(simplify=False) ]
+                px = [polygon_vertices[i][0] for i in xrange(len(polygon_vertices))]
+                py = [polygon_vertices[i][1] for i in xrange(len(polygon_vertices))]
+                ax.plot(px, py, 'w-', linewidth=0.5)
+
         except AttributeError: # just in case a grid was not loaded before
-            ax.set_xlim([np.nanmin(lon), np.nanmax(lon)])
-            ax.set_ylim([np.nanmin(lat), np.nanmax(lat)])
+            ax.set_xlim([np.nanmin(self.grd.lonr), np.nanmax(self.grd.lonr)])
+            ax.set_ylim([np.nanmin(self.grd.latr), np.nanmax(self.grd.latr)])
         
         ax.set_aspect('equal')
         mplpanel.canvas.draw()
