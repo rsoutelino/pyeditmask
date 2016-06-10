@@ -307,7 +307,7 @@ class MainToolBar(object):
                          llcrnrlon=self.grd.lonr.min(), urcrnrlon=self.grd.lonr.max(),
                          llcrnrlat=self.grd.latr.min(), urcrnrlat=self.grd.latr.max() )
 
-            coasts = m.drawcoastlines(zorder=100, linewidth=1.0)
+            coasts = m.drawcoastlines(zorder=100, linewidth=0.0)
             coasts_paths = coasts.get_paths()
              
             for ipoly in xrange(len(coasts_paths)):
