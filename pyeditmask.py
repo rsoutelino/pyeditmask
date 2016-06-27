@@ -154,12 +154,14 @@ class Interface(wx.Frame):
         fileMenu = wx.Menu()
         fileMenu.Append(wx.ID_OPEN, u'&Open ROMS grid file')
         fileMenu.Append(wx.ID_OPEN, u'&Open coastline file')
+        fileMenu.Append(wx.ID_OPEN, u'&Open bathymetry file')
         fileMenu.Append(wx.ID_SAVE, '&Save grid')
         fileMenu.AppendSeparator()
 
         qmi = wx.MenuItem(fileMenu, wx.ID_EXIT, '&Quit\tCtrl+W')
         opf = wx.MenuItem(fileMenu, wx.ID_OPEN, '&Open\tCtrl+O')
         opc = wx.MenuItem(fileMenu, wx.ID_OPEN, '&Open\tCtrl+O+C')
+        opb = wx.MenuItem(fileMenu, wx.ID_OPEN, '&Open\tCtrl+O+B')
         svf = wx.MenuItem(fileMenu, wx.ID_SAVE, '&Save\tCtrl+S')
         fileMenu.AppendItem(qmi)
         # fileMenu.AppendItem(svf)
@@ -167,6 +169,7 @@ class Interface(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnQuit, qmi)
         self.Bind(wx.EVT_MENU, self.toolbar.OnLoadGrid, opf)
         self.Bind(wx.EVT_MENU, self.toolbar.OnLoadCoastline, opc)
+        self.Bind(wx.EVT_MENU, self.toolbar.OnLoadBathymetry, opb)
         self.Bind(wx.EVT_MENU, self.toolbar.OnSaveGrid, svf)
 
         menubar.Append(fileMenu, u'&PyEditMask')
@@ -216,6 +219,8 @@ class MainToolBar(object):
                         "Load ocean_grd.nc ROMS grid netcdf file"),
             'load_coastline': (load_bitmap('coast.png'), u"Load coastline",
                         "Load *.mat coastline file [lon / lat poligons]"),
+            'load_bathymetry': (load_bitmap('bathy.png'), u"Load bathy",
+                        "Load ocean_grd.nc ROMS bathy netcdf file"),
             'save_grid': (load_bitmap('save.png'), u"Apply and save",
                         "Save changes to ocean_grd.nc ROMS grid netcdf file"),
             'set_land': (load_bitmap('land.png'), u"Set land",
@@ -236,6 +241,8 @@ class MainToolBar(object):
                         self.OnLoadGrid)
         self.createTool(self.toolbar, self.tools_params['load_coastline'], 
                         self.OnLoadCoastline)
+        self.createTool(self.toolbar, self.tools_params['load_bathymetry'], 
+                        self.OnLoadBathymetry)
         self.createTool(self.toolbar, self.tools_params['save_grid'], 
                         self.OnSaveGrid)
         
@@ -317,7 +324,7 @@ class MainToolBar(object):
                                     r.iter_segments(simplify=False) ]
                 px = [polygon_vertices[i][0] for i in xrange(len(polygon_vertices))]
                 py = [polygon_vertices[i][1] for i in xrange(len(polygon_vertices))]
-                ax.plot(px, py, 'w-', linewidth=0.5)
+                ax.plot(px, py, 'w-', linewidth=1.5)
 
         except AttributeError: # just in case a grid was not loaded before
             ax.set_xlim([np.nanmin(self.grd.lonr), np.nanmax(self.grd.lonr)])
@@ -325,6 +332,25 @@ class MainToolBar(object):
         
         ax.set_aspect('equal')
         mplpanel.canvas.draw()
+
+
+
+    def OnLoadBathymetry(self, evt):
+
+        mplpanel = app.frame.mplpanel
+        ax = mplpanel.ax
+
+        bathy  = self.grd.ncfile.variables['h'][:]
+        self.pcolor = ax.pcolormesh(self.grd.lonr, self.grd.latr, bathy, 
+                                   vmin=np.nanmin(bathy), vmax=np.nanmax(bathy), 
+                                   cmap=plt.cm.Blues, alpha=0.3)
+
+        levs = np.arange(np.nanmin(bathy), np.nanmin(bathy)+35, 5)
+        cs = ax.contour(self.grd.lonr, self.grd.latr, bathy, levs)
+        plt.clabel(cs, cs.levels, inline=True, fmt='%.1f', fontsize=14)
+
+        mplpanel.canvas.draw()
+
 
 
     def OnSaveGrid(self, evt):
