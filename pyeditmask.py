@@ -278,7 +278,7 @@ class MainToolBar(object):
 
     def OnLoadGrid(self, evt):
         openFileDialog = wx.FileDialog(self.parent, "Open grid netcdf file [*.nc]",
-                                       "/ops/hindcast/roms", " ",
+                                       "/static/hindcast/roms", " ",
                                        "netcdf files (*.nc)|*.nc",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
