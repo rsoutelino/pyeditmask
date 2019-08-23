@@ -10,7 +10,7 @@ Quick start
 
 - or, clone this repo into /source and use the docker image:
 ```
-docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME:$HOME -v /home/roms:/home/roms  -v /static:/static metocean/roms_tools
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME:$HOME -v /home/roms:/home/roms  -v /static:/static rsoutelino/pyeditmask
 ```
 
 - Note that is necessary to mount `$HOME` because that's how the X forwarding is handled from host to container. 
