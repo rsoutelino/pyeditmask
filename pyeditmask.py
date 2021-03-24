@@ -64,10 +64,12 @@ class RomsGrid(object):
         self.latu  = self.ncfile.variables['lat_u'][:]
         self.lonv  = self.ncfile.variables['lon_v'][:]
         self.latv  = self.ncfile.variables['lat_v'][:]
+        self.lonvert = self.ncfile.variables['lon_vert'][:]
+        self.latvert = self.ncfile.variables['lat_vert'][:]
         self.h     = self.ncfile.variables['h'][:]
         self.maskr = self.ncfile.variables['mask_rho'][:]
         self.masku = self.ncfile.variables['mask_u'][:]
-        self.maskv = self.ncfile.variables['mask_v'][:]     
+        self.maskv = self.ncfile.variables['mask_v'][:]
 
 
 def uvp_mask(rfield):
@@ -290,13 +292,13 @@ class MainToolBar(object):
 
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
-        self.pcolor = ax.pcolormesh(grd.lonr, grd.latr, grd.maskr, 
+        self.pcolor = ax.pcolormesh(grd.lonvert, grd.latvert, grd.maskr, 
                                    vmin=DEFAULT_VMIN, vmax=DEFAULT_VMAX, 
                                    cmap=DEFAULT_CMAP)
-        ax.plot(grd.lonr, grd.latr, 'k', alpha=0.2)
-        ax.plot(grd.lonr.transpose(), grd.latr.transpose(), 'k', alpha=0.2)
-        ax.set_xlim([grd.lonr.min(), grd.lonr.max()])
-        ax.set_ylim([grd.latr.min(), grd.latr.max()])
+        ax.plot(grd.lonvert, grd.latvert, 'k', alpha=0.2)
+        ax.plot(grd.lonvert.transpose(), grd.latvert.transpose(), 'k', alpha=0.2)
+        ax.set_xlim([grd.lonvert.min(), grd.lonvert.max()])
+        ax.set_ylim([grd.latvert.min(), grd.latvert.max()])
         ax.set_aspect('equal')
 
         mplpanel.canvas.draw()
@@ -310,9 +312,9 @@ class MainToolBar(object):
         ax = mplpanel.ax
 
         try:
-            m = Basemap( resolution='h', projection='cyl',
-                         llcrnrlon=self.grd.lonr.min(), urcrnrlon=self.grd.lonr.max(),
-                         llcrnrlat=self.grd.latr.min(), urcrnrlat=self.grd.latr.max() )
+            m = Basemap( resolution='f', projection='cyl',
+                         llcrnrlon=self.grd.lonvert.min(), urcrnrlon=self.grd.lonvert.max(),
+                         llcrnrlat=self.grd.latvert.min(), urcrnrlat=self.grd.latvert.max() )
 
             coasts = m.drawcoastlines(zorder=100, linewidth=0.0)
             coasts_paths = coasts.get_paths()
@@ -324,11 +326,11 @@ class MainToolBar(object):
                                     r.iter_segments(simplify=False) ]
                 px = [polygon_vertices[i][0] for i in xrange(len(polygon_vertices))]
                 py = [polygon_vertices[i][1] for i in xrange(len(polygon_vertices))]
-                ax.plot(px, py, 'w-', linewidth=1.5)
+                ax.plot(px, py, '-', linewidth=1.5, color='lightgray')
 
         except AttributeError: # just in case a grid was not loaded before
-            ax.set_xlim([np.nanmin(self.grd.lonr), np.nanmax(self.grd.lonr)])
-            ax.set_ylim([np.nanmin(self.grd.latr), np.nanmax(self.grd.latr)])
+            ax.set_xlim([np.nanmin(self.grd.lonvert), np.nanmax(self.grd.lonvert)])
+            ax.set_ylim([np.nanmin(self.grd.latvert), np.nanmax(self.grd.latvert)])
         
         ax.set_aspect('equal')
         mplpanel.canvas.draw()
@@ -341,7 +343,7 @@ class MainToolBar(object):
         ax = mplpanel.ax
 
         bathy  = self.grd.ncfile.variables['h'][:]
-        self.pcolor = ax.pcolormesh(self.grd.lonr, self.grd.latr, bathy, 
+        self.pcolor = ax.pcolormesh(self.grd.lonvert, self.grd.latvert, bathy, 
                                    vmin=np.nanmin(bathy), vmax=np.nanmax(bathy), 
                                    cmap=plt.cm.Blues, alpha=0.3)
 
@@ -411,12 +413,12 @@ class MainToolBar(object):
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
         x, y = evt.xdata, evt.ydata
-        line, col = find_lower_left_node(self.grd.lonr, self.grd.latr, x, y)
+        line, col = find_lower_left_node(self.grd.lonvert, self.grd.latvert, x, y)
         self.grd.maskr[line, col] = 0 # assigning new value
         self.grd.h[line, col] = self.grd.hmin
         # refilling with new value
-        ax.pcolormesh(self.grd.lonr[line:line+2, col:col+2], 
-                      self.grd.latr[line:line+2, col:col+2], 
+        ax.pcolormesh(self.grd.lonvert[line:line+2, col:col+2], 
+                      self.grd.latvert[line:line+2, col:col+2], 
                       self.grd.maskr[line:line+2, col:col+2], 
                       vmin=DEFAULT_VMIN, vmax=DEFAULT_VMAX, cmap=DEFAULT_CMAP)
         mplpanel.canvas.draw()
@@ -451,13 +453,13 @@ class MainToolBar(object):
                         grd.h[i,j] = grd.hmin
 
             ax.clear()
-            self.pcolor = ax.pcolormesh(grd.lonr, grd.latr, grd.maskr, 
+            self.pcolor = ax.pcolormesh(grd.lonvert, grd.latvert, grd.maskr, 
                                    vmin=DEFAULT_VMIN, vmax=DEFAULT_VMAX, 
                                    cmap=DEFAULT_CMAP)
-            ax.plot(grd.lonr, grd.latr, 'k', alpha=0.2)
-            ax.plot(grd.lonr.transpose(), grd.latr.transpose(), 'k', alpha=0.2)
-            ax.set_xlim([grd.lonr.min(), grd.lonr.max()])
-            ax.set_ylim([grd.latr.min(), grd.latr.max()])
+            ax.plot(grd.lonvert, grd.latvert, 'k', alpha=0.2)
+            ax.plot(grd.lonvert.transpose(), grd.latvert.transpose(), 'k', alpha=0.2)
+            ax.set_xlim([grd.lonvert.min(), grd.lonvert.max()])
+            ax.set_ylim([grd.latvert.min(), grd.latvert.max()])
             ax.set_aspect('equal')
             mplpanel.canvas.draw()
             del self.points, self.area
@@ -469,12 +471,12 @@ class MainToolBar(object):
         mplpanel = app.frame.mplpanel
         ax = mplpanel.ax
         x, y = evt.xdata, evt.ydata
-        line, col = find_lower_left_node(self.grd.lonr, self.grd.latr, x, y)
+        line, col = find_lower_left_node(self.grd.lonvert, self.grd.latvert, x, y)
         self.grd.maskr[line, col] = 1 # assigning new value
         self.grd.h[line, col] = self.grd.hmin
         # refilling with new value
-        ax.pcolormesh(self.grd.lonr[line:line+2, col:col+2], 
-                      self.grd.latr[line:line+2, col:col+2], 
+        ax.pcolormesh(self.grd.lonvert[line:line+2, col:col+2], 
+                      self.grd.latvert[line:line+2, col:col+2], 
                       self.grd.maskr[line:line+2, col:col+2], 
                       vmin=DEFAULT_VMIN, vmax=DEFAULT_VMAX, cmap=DEFAULT_CMAP)
         mplpanel.canvas.draw()
@@ -509,13 +511,13 @@ class MainToolBar(object):
                         grd.h[i,j] = grd.hmin
                         
             ax.clear()
-            self.pcolor = ax.pcolormesh(grd.lonr, grd.latr, grd.maskr, 
+            self.pcolor = ax.pcolormesh(grd.lonvert, grd.latvert, grd.maskr, 
                                    vmin=DEFAULT_VMIN, vmax=DEFAULT_VMAX, 
                                    cmap=DEFAULT_CMAP)
-            ax.plot(grd.lonr, grd.latr, 'k', alpha=0.2)
-            ax.plot(grd.lonr.transpose(), grd.latr.transpose(), 'k', alpha=0.2)
-            ax.set_xlim([grd.lonr.min(), grd.lonr.max()])
-            ax.set_ylim([grd.latr.min(), grd.latr.max()])
+            ax.plot(grd.lonvert, grd.latvert, 'k', alpha=0.2)
+            ax.plot(grd.lonvert.transpose(), grd.latvert.transpose(), 'k', alpha=0.2)
+            ax.set_xlim([grd.lonvert.min(), grd.lonvert.max()])
+            ax.set_ylim([grd.latvert.min(), grd.latvert.max()])
             ax.set_aspect('equal')
             mplpanel.canvas.draw()
             del self.points, self.area
